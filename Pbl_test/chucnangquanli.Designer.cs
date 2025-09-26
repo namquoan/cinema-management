@@ -90,8 +90,9 @@
             btnthoat.ShadowDecoration.CustomizableEdges = customizableEdges2;
             btnthoat.Size = new Size(139, 31);
             btnthoat.TabIndex = 3;
-            btnthoat.Text = "Thoát";
+            btnthoat.Text = "Đăng xuất";
             btnthoat.TextAlign = HorizontalAlignment.Left;
+            btnthoat.Click += btnthoat_Click;
             // 
             // btnbaoCaoDoanhThu
             // 
@@ -211,8 +212,10 @@
             ClientSize = new Size(1382, 753);
             Controls.Add(panelContent);
             Controls.Add(guna2Panel1);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "chucnangquanli";
-            Text = "Form2";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Chức năng quản lý";
             Load += chucnangquanli_Load;
             guna2Panel1.ResumeLayout(false);
             guna2Panel1.PerformLayout();

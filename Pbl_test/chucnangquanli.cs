@@ -48,5 +48,10 @@ namespace Pbl_test
         {
             ShowControl(new Tranhg_chủ());
         }
+
+        private void btnthoat_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.Cancel;
+        }
     }
 }

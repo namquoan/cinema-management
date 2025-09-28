@@ -9,34 +9,28 @@ namespace Pbl_test
 {
     public partial class FormBangThoiGian : Form
     {
-        // Variable to store the selected showtime details (Date, Start Time, Room ID)
         private (DateTime? NgayChieu, TimeSpan? GioBatDau, int? PhongID) selectedShowtimeDetails = (null, null, null);
 
         private string connectionString = @"Data Source=DESKTOP-HHKF7O6;Initial Catalog=POBOLO;Integrated Security=True;TrustServerCertificate=True";
 
         private QuanliPhim _parentForm;
-        private int _phongId; // Thêm biến lưu trữ phòng ID
-        private int _phimId; // Thêm biến lưu trữ phim ID
+        private int _phongId;
+        private int _phimId;
 
         public FormBangThoiGian(QuanliPhim parentForm, int phongId, int phimId)
         {
             InitializeComponent();
             _parentForm = parentForm;
             _phongId = phongId;
-            _phimId = phimId; // Lưu phim ID được truyền vào
+            _phimId = phimId;
             dgvThoiGianBieu.CellClick += dgvThoiGianBieu_CellClick;
             btnXacNhan.Click += btnXacNhan_Click;
 
-            // Add event handler for DefaultValuesNeeded for the new row
             dgvThoiGianBieu.DefaultValuesNeeded += dgvThoiGianBieu_DefaultValuesNeeded;
 
-            // Cấu hình DataGridView
             ConfigureDataGridView();
 
-            // Setup ComboBoxes for date selection
             SetupDateComboBoxes();
-
-            // Add event handlers for ComboBoxes
             cboYear.SelectedIndexChanged += DateComboBox_SelectedIndexChanged;
             cboMonth.SelectedIndexChanged += DateComboBox_SelectedIndexChanged;
             cboDay.SelectedIndexChanged += DateComboBox_SelectedIndexChanged;
@@ -47,47 +41,34 @@ namespace Pbl_test
             dgvThoiGianBieu.AutoGenerateColumns = false;
             dgvThoiGianBieu.Columns.Clear();
             dgvThoiGianBieu.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvThoiGianBieu.AllowUserToAddRows = true; // Allow adding new rows manually
+            dgvThoiGianBieu.AllowUserToAddRows = true;
 
-            // Add columns manually
-            // Add Time column as an editable text box
-            dgvThoiGianBieu.Columns.Add(new DataGridViewTextBoxColumn { Name = "Time", HeaderText = "Khung giờ", DataPropertyName = "Time" }); // Make Khung giờ column editable
+            dgvThoiGianBieu.Columns.Add(new DataGridViewTextBoxColumn { Name = "Time", HeaderText = "Khung giờ", DataPropertyName = "Time" });
 
-            // Add Khuyến mãi column
-            dgvThoiGianBieu.Columns.Add(new DataGridViewTextBoxColumn { Name = "Promotion", HeaderText = "Khuyến mãi", DataPropertyName = "Promotion" }); // Make Khuyến mãi column editable
-
-            // Change Room to a ComboBox column
+            dgvThoiGianBieu.Columns.Add(new DataGridViewTextBoxColumn { Name = "Promotion", HeaderText = "Khuyến mãi", DataPropertyName = "Promotion" });
             DataGridViewComboBoxColumn roomColumn = new DataGridViewComboBoxColumn();
             roomColumn.Name = "Room";
             roomColumn.HeaderText = "Phòng";
-            roomColumn.DataPropertyName = "PhongID"; // Ensure this matches the DataTable column name
-            roomColumn.DataSource = GetRoomList(); // Method to get list of rooms
-            roomColumn.DisplayMember = "PhongID"; // Display PhongID
-            roomColumn.ValueMember = "PhongID";     // Use PhongID as the value
+            roomColumn.DataPropertyName = "PhongID";
+            roomColumn.DataSource = GetRoomList();
+            roomColumn.DisplayMember = "PhongID";
+            roomColumn.ValueMember = "PhongID";
             dgvThoiGianBieu.Columns.Add(roomColumn);
 
-            // Add Phim column to display the movie title for existing showtimes
-            dgvThoiGianBieu.Columns.Add(new DataGridViewTextBoxColumn { Name = "Phim", HeaderText = "Phim", DataPropertyName = "TenPhim", ReadOnly = true }); // Add Phim column
+            dgvThoiGianBieu.Columns.Add(new DataGridViewTextBoxColumn { Name = "Phim", HeaderText = "Phim", DataPropertyName = "TenPhim", ReadOnly = true });
 
-            // Add ThoiLuong column
-            dgvThoiGianBieu.Columns.Add(new DataGridViewTextBoxColumn { Name = "ThoiLuong", HeaderText = "Thời lượng", DataPropertyName = "ThoiLuong", ReadOnly = true }); // Add ThoiLuong column
+            dgvThoiGianBieu.Columns.Add(new DataGridViewTextBoxColumn { Name = "ThoiLuong", HeaderText = "Thời lượng", DataPropertyName = "ThoiLuong", ReadOnly = true });
 
-            // Add ShowtimeID column (hidden, but used for data binding and logic)
-            // Although hidden, define it to ensure DataPropertyName can link to DataTable
-            dgvThoiGianBieu.Columns.Add(new DataGridViewTextBoxColumn { Name = "ShowtimeID", HeaderText = "Mã Xuất Chiếu", DataPropertyName = "XuatChieuID", Visible = true, ReadOnly = true }); // Hiển thị lại cột Mã Xuất Chiếu
+            dgvThoiGianBieu.Columns.Add(new DataGridViewTextBoxColumn { Name = "ShowtimeID", HeaderText = "Mã Xuất Chiếu", DataPropertyName = "XuatChieuID", Visible = true, ReadOnly = true });
 
-            // Set column widths or AutoSizeMode
-            dgvThoiGianBieu.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill; // Make all columns fill the available space
+            dgvThoiGianBieu.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
-            // Add event handler for CellValueChanged, specifically for the Room column
             dgvThoiGianBieu.CellValueChanged += dgvThoiGianBieu_CellValueChanged;
-            // Add event handler for CurrentCellDirtyStateChanged to commit changes in ComboBox immediately
             dgvThoiGianBieu.CurrentCellDirtyStateChanged += dgvThoiGianBieu_CurrentCellDirtyStateChanged;
         }
 
         private void SetupDateComboBoxes()
         {
-            // Populate Year ComboBox (e.g., current year +/- a few years)
             int currentYear = DateTime.Now.Year;
             for (int year = currentYear; year <= currentYear + 5; year++)
             {
@@ -95,19 +76,15 @@ namespace Pbl_test
             }
             cboYear.SelectedItem = currentYear;
 
-            // Populate Month ComboBox
             for (int month = 1; month <= 12; month++)
             {
-                // Only add months from the current month onwards if the current year is selected
                 if ((int)cboYear.SelectedItem == currentYear && month < DateTime.Now.Month)
                 {
-                    continue; // Skip past months in the current year
+                    continue;
                 }
                 cboMonth.Items.Add(month);
             }
             cboMonth.SelectedItem = DateTime.Now.Month;
-
-            // Populate Day ComboBox based on initial Year and Month
             PopulateDayComboBox();
             cboDay.SelectedItem = DateTime.Now.Day;
         }
@@ -209,49 +186,33 @@ namespace Pbl_test
                 return;
             }
 
-            // Get movie length (not directly needed for generating the initial list of slots, but useful for context/validation later)
             int movieLengthMinutes = GetMovieLength(_phimId);
-            // Add 15 minutes for ads and cleaning (also for later use)
             int totalShowtimeLength = movieLengthMinutes + 15;
 
-            // Create a new DataTable for display
             DataTable displayTable = new DataTable();
 
-            // Define columns explicitly to ensure correct schema
-            displayTable.Columns.Clear(); // Clear any existing columns
-            displayTable.Columns.Add("Time", typeof(string)); // Store start time as string for editing
-            displayTable.Columns.Add("PhongID", typeof(int)); // Store Room ID
-            displayTable.Columns.Add("XuatChieuID", typeof(string)); // Store generated/existing ShowtimeID
-            displayTable.Columns.Add("TenPhim", typeof(string)); // Store movie title
-            displayTable.Columns.Add("ThoiLuong", typeof(string)); // Store calculated duration
-            displayTable.Columns.Add("PhimID", typeof(int)); // Store movie ID (hidden)
-
-            // Create a dictionary to temporarily hold existing showtime data
+            displayTable.Columns.Clear();
+            displayTable.Columns.Add("Time", typeof(string));
+            displayTable.Columns.Add("Promotion", typeof(string));
+            displayTable.Columns.Add("PhongID", typeof(int));
+            displayTable.Columns.Add("XuatChieuID", typeof(string));
+            displayTable.Columns.Add("TenPhim", typeof(string));
+            displayTable.Columns.Add("ThoiLuong", typeof(string));
+            displayTable.Columns.Add("PhimID", typeof(int));
             Dictionary<TimeSpan, (int phongId, string xuatChieuId, string tenPhim, int phimId)> existingShowtimeData = new Dictionary<TimeSpan, (int, string, string, int)>();
 
-            // Get existing showtimes for the selected date and room (to pre-fill if they exist)
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-                // Select all showtimes for the selected date (regardless of room initially, though the form is tied to one room)
-                // We will filter by room when populating the display table.
-                string query = @"SELECT XC.GioBatDau, XC.PhongID, XC.XuatChieuID AS XuatChieuID, P.TenPhim, XC.PhimID, P.DoDaiPhim
+                string query = @"SELECT XC.GioBatDau, XC.PhongID, XC.XuatChieuID AS XuatChieuID, P.TenPhim, XC.PhimID, P.DoDaiPhim, ISNULL(XC.KhuyenMai, 0) AS KhuyenMai
                                FROM XuatChieu XC
                                JOIN Phim P ON XC.PhimID = P.PhimID
-                               WHERE XC.NgayChieu = @ngayChieu"; // Show all movies for the selected date
+                               WHERE XC.NgayChieu = @ngayChieu";
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@ngayChieu", selectedDate);
-                    System.Diagnostics.Debug.WriteLine("Executing query in LoadShowtimesForSelectedDate: " + query);
-                    System.Diagnostics.Debug.WriteLine("Parameters: @ngayChieu=" + selectedDate);
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        System.Diagnostics.Debug.WriteLine("Query executed successfully.");
-                        // Debug: Print column names returned by the reader
-                        for (int i = 0; i < reader.FieldCount; i++)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"Column {i}: {reader.GetName(i)}");
-                        }
                         while (reader.Read())
                         {
                             TimeSpan startTime = (TimeSpan)reader["GioBatDau"];
@@ -259,20 +220,18 @@ namespace Pbl_test
                             string xuatChieuId = reader.GetString(reader.GetOrdinal("XuatChieuID"));
                             string tenPhim = reader["TenPhim"].ToString();
                             int phimId = (int)reader["PhimID"];
-                            TimeSpan movieDuration = (TimeSpan)reader["DoDaiPhim"]; // Read the movie duration
-                            int totalShowtimeLengthMinutes = (int)movieDuration.TotalMinutes + 15; // Calculate total duration with buffer
+                            TimeSpan movieDuration = (TimeSpan)reader["DoDaiPhim"];
+                            float khuyenMai = Convert.ToSingle(reader["KhuyenMai"]);
+                            int totalShowtimeLengthMinutes = (int)movieDuration.TotalMinutes + 15;
 
-                            // Debug: Print values read from the database
-                            System.Diagnostics.Debug.WriteLine($"Read from DB - GioBatDau: {startTime}, PhongID: {phongId}, XuatChieuID: {xuatChieuId}, TenPhim: {tenPhim}, PhimID: {phimId}, DoDaiPhim: {movieDuration}");
-
-                            // Store existing showtimes by start time, including room ID and XuatChieuID
                             DataRow existingRow = displayTable.NewRow();
-                            existingRow["Time"] = startTime.ToString(@"hh\:mm"); // Store start time as string
-                            existingRow["PhongID"] = phongId; // Store Room ID
-                            existingRow["XuatChieuID"] = xuatChieuId; // Store generated/existing ShowtimeID
-                            existingRow["TenPhim"] = tenPhim; // Store movie title
-                            existingRow["ThoiLuong"] = TimeSpan.FromMinutes(totalShowtimeLengthMinutes).ToString(@"hh\:mm"); // Display calculated duration
-                            existingRow["PhimID"] = phimId; // Store movie ID (hidden)
+                            existingRow["Time"] = startTime.ToString(@"hh\:mm");
+                            existingRow["PhongID"] = phongId;
+                            existingRow["XuatChieuID"] = xuatChieuId;
+                            existingRow["TenPhim"] = tenPhim;
+                            existingRow["ThoiLuong"] = TimeSpan.FromMinutes(totalShowtimeLengthMinutes).ToString(@"hh\:mm");
+                            existingRow["PhimID"] = phimId;
+                            existingRow["Promotion"] = khuyenMai > 0 ? $"{khuyenMai}%" : "0%";
                             displayTable.Rows.Add(existingRow);
                         }
                     }
@@ -344,16 +303,12 @@ namespace Pbl_test
                 return;
             }
 
-            // Get the length of the movie for the current showtime being added once at the beginning
             int movieLengthMinutes = GetMovieLength(_phimId);
 
-            // Extract details from the DataRow
             DateTime selectedDate;
             TimeSpan startTime;
             int selectedRoomId;
             string existingShowtimeId = null;
-
-            // Get Date from ComboBoxes (already validated in LoadShowtimesForSelectedDate, but re-check for safety)
             if (cboYear.SelectedItem == null || cboMonth.SelectedItem == null || cboDay.SelectedItem == null)
             {
                 MessageBox.Show("Vui lòng chọn ngày, tháng, và năm.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -379,7 +334,6 @@ namespace Pbl_test
                 return;
             }
 
-            // Get Start Time from the "Time" column of the selected row
             if (rowToProcess.Cells["Time"].Value == null || rowToProcess.Cells["Time"].Value == DBNull.Value)
             {
                 MessageBox.Show("Không thể lấy giờ bắt đầu từ hàng đã chọn.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -391,7 +345,6 @@ namespace Pbl_test
                 return;
             }
 
-            // Get Room ID from the "PhongID" column of the selected row
             if (rowToProcess.Cells["Room"].Value == null || rowToProcess.Cells["Room"].Value == DBNull.Value)
             {
                 MessageBox.Show("Vui lòng chọn phòng cho suất chiếu.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -399,21 +352,17 @@ namespace Pbl_test
             }
             selectedRoomId = (int)rowToProcess.Cells["Room"].Value;
 
-            // Get existing ShowtimeID from the "XuatChieuID" column (it's hidden but in the DataTable)
             if (rowToProcess.Cells["ShowtimeID"].Value != null && rowToProcess.Cells["ShowtimeID"].Value != DBNull.Value)
             {
                 existingShowtimeId = rowToProcess.Cells["ShowtimeID"].Value.ToString();
             }
-
-            // --- Implement Duplicate Check ---
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
 
-                TimeSpan newShowtimeDuration = TimeSpan.FromMinutes(movieLengthMinutes + 15); // Add 15 mins buffer
+                TimeSpan newShowtimeDuration = TimeSpan.FromMinutes(movieLengthMinutes + 15);
                 TimeSpan newShowtimeEndTime = startTime.Add(newShowtimeDuration);
 
-                // Query for existing showtimes in the same room and on the same date
                 string overlapCheckQuery = @"SELECT XC.GioBatDau, P.DoDaiPhim
                                                FROM XuatChieu XC
                                                JOIN Phim P ON XC.PhimID = P.PhimID
@@ -434,66 +383,113 @@ namespace Pbl_test
                             TimeSpan existingShowtimeDuration = TimeSpan.FromMinutes(existingMovieLengthMinutes + 15);
                             TimeSpan existingShowtimeEndTime = existingStartTime.Add(existingShowtimeDuration);
 
-                            // Check for overlap
-                            // Overlap exists if (StartA < EndB and EndA > StartB)
                             if ((startTime < existingShowtimeEndTime) && (newShowtimeEndTime > existingStartTime))
                             {
-                                 // If a duplicate exists and it's for a NEW showtime, prevent adding.
                                  if (string.IsNullOrEmpty(existingShowtimeId))
                                  {
                                       MessageBox.Show("Suất chiếu bị trùng lặp thời gian với suất chiếu khác trong cùng phòng.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                                      return; // Stop execution
+                                      return;
                                  }
                             }
                         }
                     }
                 }
 
-                // The original check for exact start time duplicate can be removed or kept as an additional check
-                // I will keep the overlap check which is more comprehensive.
-
             }
-            // --- End Duplicate Check ---
-
-            // If we reach here, either it's a new showtime with no overlap, or it's an existing showtime.
 
             string showtimeIdToSave = existingShowtimeId;
+            bool isNewShowtime = string.IsNullOrEmpty(existingShowtimeId);
 
-            // If it's a new showtime, generate a new ShowtimeID
-            if (string.IsNullOrEmpty(showtimeIdToSave))
+            if (isNewShowtime)
             {
                  int sequenceNumber = GetNextShowtimeSequence(selectedDate);
                 showtimeIdToSave = $"S{sequenceNumber}";
             }
 
-            // Get and parse the end time from the selected showtime
-            TimeSpan endTime = startTime.Add(TimeSpan.FromMinutes(movieLengthMinutes + 15)); // Add movie length + 15 mins ads
-
-            // Call LuuSuatChieu with the full details
+            TimeSpan endTime = startTime.Add(TimeSpan.FromMinutes(movieLengthMinutes + 15));
             float khuyenMai = 0;
-            if (rowToProcess.Cells["Promotion"].Value != null && float.TryParse(rowToProcess.Cells["Promotion"].Value.ToString(), out float parsedKhuyenMai))
+            if (rowToProcess.Cells["Promotion"].Value != null)
             {
-                khuyenMai = parsedKhuyenMai;
+                string promotionValue = rowToProcess.Cells["Promotion"].Value.ToString();
+                if (promotionValue.EndsWith("%"))
+                {
+                    string numberPart = promotionValue.Replace("%", "").Trim();
+                    if (float.TryParse(numberPart, out float parsedKhuyenMai))
+                    {
+                        khuyenMai = parsedKhuyenMai;
+                    }
+                }
+                else if (promotionValue.ToLower() == "không" || promotionValue == "0")
+                {
+                    khuyenMai = 0;
+                }
+                else if (float.TryParse(promotionValue, out float parsedKhuyenMai))
+                {
+                    khuyenMai = parsedKhuyenMai;
+                }
             }
-            LuuSuatChieu(showtimeIdToSave, _phimId, selectedRoomId, selectedDate, startTime, endTime, khuyenMai);
+            if (isNewShowtime)
+            {
+                LuuSuatChieu(showtimeIdToSave, _phimId, selectedRoomId, selectedDate, startTime, endTime, khuyenMai);
+                MessageBox.Show($"Đã tạo suất chiếu mới: {showtimeIdToSave}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                CapNhatSuatChieu(showtimeIdToSave, _phimId, selectedRoomId, selectedDate, startTime, endTime, khuyenMai);
+                MessageBox.Show($"Đã cập nhật suất chiếu: {showtimeIdToSave}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
 
-            // Pass the generated/existing ShowtimeID back to the parent form
-            _parentForm.SetXuatChieu(showtimeIdToSave); // Assuming SetXuatChieu expects ShowtimeID
+            _parentForm.SetXuatChieu(showtimeIdToSave);
 
-            // Reload the showtimes to update the grid
             LoadShowtimesForSelectedDate();
 
-            // Close the form
             this.Close();
         }
 
-        // Modified to save a single showtime with full details
+        private void CapNhatSuatChieu(string xuatChieuId, int phimId, int phongId, DateTime ngayChieu, TimeSpan gioBatDau, TimeSpan gioKetThuc, float khuyenMai)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string updateQuery = @"UPDATE XuatChieu
+                                     SET GioBatDau = @GioBatDau, GioKetThuc = @GioKetThuc, KhuyenMai = @KhuyenMai
+                                     WHERE XuatChieuID = @XuatChieuID AND PhimID = @PhimID AND PhongID = @PhongID AND NgayChieu = @NgayChieu";
+
+                using (SqlCommand cmd = new SqlCommand(updateQuery, conn))
+                {
+                    cmd.Parameters.AddWithValue("@GioBatDau", gioBatDau);
+                    cmd.Parameters.AddWithValue("@GioKetThuc", gioKetThuc);
+                    cmd.Parameters.AddWithValue("@KhuyenMai", khuyenMai);
+                    cmd.Parameters.AddWithValue("@XuatChieuID", xuatChieuId);
+                    cmd.Parameters.AddWithValue("@PhimID", phimId);
+                    cmd.Parameters.AddWithValue("@PhongID", phongId);
+                    cmd.Parameters.AddWithValue("@NgayChieu", ngayChieu);
+
+                    try
+                    {
+                        int rowsAffected = cmd.ExecuteNonQuery();
+                        if (rowsAffected > 0)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Suất chiếu {xuatChieuId} đã được cập nhật thành công trong DB.");
+                        }
+                        else
+                        {
+                            MessageBox.Show($"Không tìm thấy suất chiếu {xuatChieuId} để cập nhật.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Lỗi khi cập nhật suất chiếu {xuatChieuId}: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+
         private void LuuSuatChieu(string xuatChieuId, int phimId, int phongId, DateTime ngayChieu, TimeSpan gioBatDau, TimeSpan gioKetThuc, float khuyenMai)
         {
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-                // Check if the showtime already exists for this exact combination
                 string checkQuery = "SELECT COUNT(*) FROM XuatChieu WHERE XuatChieuID = @XuatChieuID AND PhimID = @PhimID AND PhongID = @PhongID AND NgayChieu = @NgayChieu";
                 SqlCommand checkCmd = new SqlCommand(checkQuery, conn);
                 checkCmd.Parameters.AddWithValue("@XuatChieuID", xuatChieuId);
@@ -505,7 +501,6 @@ namespace Pbl_test
 
                 if (count == 0)
                 {
-                    // Insert the new showtime
                     string insertQuery = @"INSERT INTO XuatChieu (XuatChieuID, PhimID, PhongID, NgayChieu, GioBatDau, GioKetThuc, KhuyenMai)
                                          VALUES (@XuatChieuID, @PhimID, @PhongID, @NgayChieu, @GioBatDau, @GioKetThuc, @KhuyenMai)";
 
@@ -523,7 +518,7 @@ namespace Pbl_test
                         {
                             cmd.ExecuteNonQuery();
                             MessageBox.Show($"Đã thêm suất chiếu: {xuatChieuId} - {ngayChieu:yyyy-MM-dd}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            System.Diagnostics.Debug.WriteLine($"Suất chiếu {xuatChieuId} đã được thêm thành công vào DB."); // Debugging line
+                            System.Diagnostics.Debug.WriteLine($"Suất chiếu {xuatChieuId} đã được thêm thành công vào DB.");
                         }
                         catch (Exception ex)
                         {
@@ -776,7 +771,7 @@ namespace Pbl_test
 
         private void dgvThoiGianBieu_DefaultValuesNeeded(object sender, DataGridViewRowEventArgs e)
         {
-            e.Row.Cells["Promotion"].Value = "Không";
+            e.Row.Cells["Promotion"].Value = "0%"; // Hiển thị 0% thay vì "Không" để rõ ràng hơn
             e.Row.Cells["Room"].Value = DBNull.Value;
             e.Row.Cells["ShowtimeID"].Value = DBNull.Value;
 
